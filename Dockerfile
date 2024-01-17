@@ -19,9 +19,11 @@ RUN npx playwright install-deps && \
 
 COPY . .
 
-RUN chgrp -R 0 /data && \
-    chmod -R g+rwX /data;  \
+RUN  \
     yarn prisma generate && \
-    yarn build
+    yarn build && \
+    chgrp -R 0 /data && \
+    chmod -R g+rwX /data && \
+    umask 022
 
 CMD yarn prisma migrate deploy && yarn start
