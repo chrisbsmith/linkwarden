@@ -9,8 +9,8 @@ jobs:
   get-release-tags:
     runs-on: ubuntu-latest
     outputs:
-      upstream_release: ${{ steps.upstream-release.outputs.upstream-release }}
-      local_tag: ${{ steps.local-tag.outputs.local-tag }}
+      upstream_release: ${{ steps.upstream-release.outputs.upstream_release }}
+      local_tag: ${{ steps.local-tag.outputs.local_tag }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -22,14 +22,16 @@ jobs:
         shell: bash
         run: |
           latest_release=$(gh release list --limit 1 -R linkwarden/linkwarden | awk '{ print $1 }')
-          echo "upstream-release=${latest_release}" >> "$GITHUB_OUTPUT"
+          echo "upstream_release=${latest_release}" >> "$GITHUB_OUTPUT"
+          echo "upstream_release=${latest_release}"
 
       - name: Get latest local tag
         id: local-tag
         shell: bash
         run: |
-          local-tag=$(git describe --tags --abbrev=0)
-          echo "local_tag" >> "$GITHUB_OUTPUT"
+          local_tag=$(git describe --tags --abbrev=0)
+          echo "local_tag=${local_tag}" >> "$GITHUB_OUTPUT"
+          echo "local_tag=${local_tag}"
 
   checkout-upstream:
     if: needs.get-release-tags.outputs.upstream_release != needs.get-release-tags.outputs.local_tag
