@@ -14,11 +14,6 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          fetch-tags: true
-
       - name: Get latest upstream release
         id: upstream-release
         shell: bash
@@ -31,7 +26,7 @@ jobs:
         id: local-tag
         shell: bash
         run: |
-          local_tag=$(git describe --tags --abbrev=0)
+          local_tag=$(gh release list --limit 1 -R chrisbsmith/linkwarden | awk '{ print $1 }')
           echo "local_tag=${local_tag}" >> "$GITHUB_OUTPUT"
           echo "local_tag=${local_tag}"
 
