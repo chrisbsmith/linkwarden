@@ -1,0 +1,44 @@
+name: Patch upstream
+
+on:
+  push:
+    branches:
+      - patch
+
+jobs:
+  get-release-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      upstream_release: ${{ steps.upstream-release.outputs.upstream-release }}
+      local_tag: ${{ steps.local-tag.outputs.local-tag }}
+    steps:
+      - name: Get latest upstream release
+        id: upstream-release
+        shell: bash
+        run: |
+          latest_release=$(gh release list --limit 1 -R linkwarden/linkwarden | awk '{ print $1 }')
+          echo "upstream-release=${latest_release}" >> "$GITHUB_OUTPUT"
+
+      - name: Get latest local tag
+        id: local-tag
+        shell: bash
+        run: |
+          local-tag=$(git describe --tags --abbrev=0)
+          echo "local_tag" >> "$GITHUB_OUTPUT"
+
+  checkout-upstream:
+    if: needs.get-release-tags.outputs.upstream_release != needs.get-release-tags.outputs.local_tag
+    runs-on: ubuntu-latest
+    env:
+      ref: ${{ needs.get-release-tags-outputs.upstream_release }}
+    steps:
+      - name: Clone upstream Linkwarden repo
+        uses: actions/checkout@v4
+        with:
+          repository: linkwarden/linkwarden
+          ref: ${{env.ref}}
+      - name: Apply Patch
+        shell: bash
+        run: |
+          git apply linkwarden.patch
+

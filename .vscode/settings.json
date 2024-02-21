@@ -1,1 +1,3 @@
-{}
+{
+  "ansible.python.interpreterPath": "/Users/chris/Development/personal/home/homelab/.venv/bin/python"
+}
