@@ -49,10 +49,12 @@ jobs:
         with:
           repository: linkwarden/linkwarden
           ref: ${{env.ref}}
+          path: upstream
 
       - name: Apply Patch
         shell: bash
         run: |
           find .
-          git apply linkwarden.patch
+          cd upstream
+          git apply ../patch/linkwarden.patch
 
