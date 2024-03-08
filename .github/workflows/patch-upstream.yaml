@@ -38,6 +38,9 @@ jobs:
     env:
       ref: ${{ needs.get-release-tags.outputs.upstream_release }}
     steps:
+      - name: Checkout local repo
+        uses: actions/checkout@v4
+
       - name: Clone upstream Linkwarden repo
         uses: actions/checkout@v4
         with:
