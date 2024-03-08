@@ -40,12 +40,15 @@ jobs:
     steps:
       - name: Checkout local repo
         uses: actions/checkout@v4
+        with:
+          ref: patch
 
       - name: Clone upstream Linkwarden repo
         uses: actions/checkout@v4
         with:
           repository: linkwarden/linkwarden
           ref: ${{env.ref}}
+
       - name: Apply Patch
         shell: bash
         run: |
