@@ -49,5 +49,6 @@ jobs:
       - name: Apply Patch
         shell: bash
         run: |
+          ls -al
           git apply linkwarden.patch
 
