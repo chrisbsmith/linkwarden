@@ -1,24 +1,55 @@
 name: Create and publish a container image on release
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
+  release:
+    types:
+      - 'created'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
+  get-release-tags:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    outputs:
+      upstream_release: ${{ steps.upstream-release.outputs.upstream_release }}
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout repository
+      - name: Get latest upstream release
+        id: upstream-release
+        shell: bash
+        run: |
+          latest_release=$(gh release list --limit 1 -R linkwarden/linkwarden | awk '{ print $1 }')
+          echo "upstream_release=${latest_release}" >> "$GITHUB_OUTPUT"
+          echo "upstream_release=${latest_release}"
+
+  checkout-upstream-and-build:
+    runs-on: ubuntu-latest
+    needs:
+      - get-release-tags
+    env:
+      ref: ${{ needs.get-release-tags.outputs.upstream_release }}
+    steps:
+      - name: Checkout local repo
         uses: actions/checkout@v4
+        with:
+          path: local
+
+      - name: Clone upstream Linkwarden repo
+        uses: actions/checkout@v4
+        with:
+          repository: linkwarden/linkwarden
+          ref: ${{env.ref}}
+          path: upstream
+
+      - name: Apply Patch
+        shell: bash
+        run: |
+          cd upstream
+          git apply ../local/linkwarden.patch
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -42,7 +73,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: upstream/
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
